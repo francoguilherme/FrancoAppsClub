@@ -1,5 +1,6 @@
 package com.guilherme.appsclub;
 
+import android.content.Intent;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,6 +14,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.GridView;
 
 import org.json.JSONArray;
@@ -180,6 +183,20 @@ public class MainActivity extends AppCompatActivity
         gridView = findViewById(R.id.gridView);
         gridViewAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, appItems);
         gridView.setAdapter(gridViewAdapter);
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                AppItem item = (AppItem) parent.getItemAtPosition(position);
+
+                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+                intent.putExtra("title", item.getAppName());
+                intent.putExtra("image", item.getImage());
+
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
