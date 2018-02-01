@@ -1,8 +1,6 @@
 package com.guilherme.appsclub;
 
-import android.app.Activity;
 import android.app.FragmentManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -25,7 +23,6 @@ public class MainActivity extends AppCompatActivity
         implements TaskFragment.TaskCallbacks, NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG_TASK_FRAGMENT = "task_fragment";
-    private TaskFragment taskFragment;
 
     public GridView gridView;
     public GridViewAdapter gridViewAdapter;
@@ -38,11 +35,10 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         FragmentManager fragmentManager = getFragmentManager();
-        taskFragment = (TaskFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
+        TaskFragment taskFragment = (TaskFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
 
         // If the Fragment is non-null, then it is currently being retained across a configuration change.
         if (taskFragment == null) {
-            System.out.println("criei fragmento");
             taskFragment = new TaskFragment();
             fragmentManager.beginTransaction().add(taskFragment, TAG_TASK_FRAGMENT).commit();
         }
@@ -75,6 +71,9 @@ public class MainActivity extends AppCompatActivity
                 Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
                 intent.putExtra("appName", item.getAppName());
                 intent.putExtra("image", item.getImage());
+                intent.putExtra("description", item.getDescription());
+                intent.putExtra("company", item.getCompany());
+                intent.putExtra("score", item.getScore());
 
                 final ImageView appImage = view.findViewById(R.id.appImage);
 

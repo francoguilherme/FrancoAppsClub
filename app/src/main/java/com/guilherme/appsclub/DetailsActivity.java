@@ -10,12 +10,55 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.TextView;
 
 public class DetailsActivity extends AppCompatActivity {
+
+    private Toolbar toolbar;
+    private ImageView appImageView;
+    private TextView descriptionView;
+    private TextView companyView;
+    private RatingBar scoreBar;
+
+    private String appName;
+    private Bitmap image;
+    private String description;
+    private String company;
+    private String score;
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+    }
+
+    public void findViews(){
+
+        toolbar = findViewById(R.id.toolbar);
+        appImageView = findViewById(R.id.appImage);
+        descriptionView = findViewById(R.id.descriptionView);
+        companyView = findViewById(R.id.companyView);
+        scoreBar = findViewById(R.id.scoreBar);
+    }
+
+    public void getExtras(){
+
+        Intent parentIntent = getIntent();
+
+        appName = parentIntent.getStringExtra("appName");
+        image = parentIntent.getParcelableExtra("image");
+        description = parentIntent.getStringExtra("description");
+        company = parentIntent.getStringExtra("company");
+        score = parentIntent.getStringExtra("score");
+    }
+
+    public void updateDetails(){
+
+        toolbar.setTitle(appName);
+        appImageView.setImageBitmap(image);
+        descriptionView.setText(description);
+        companyView.setText(company);
+        scoreBar.setRating(Float.valueOf(score));
     }
 
     @Override
@@ -23,20 +66,14 @@ public class DetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scrolling);
 
-        Intent parentIntent = getIntent();
-        String appName = parentIntent.getStringExtra("appName");
-        Bitmap image = parentIntent.getParcelableExtra("image");
+        findViews();
+        getExtras();
+        updateDetails();
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle(appName);
         toolbar.setNavigationIcon(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_arrow_back));
         setSupportActionBar(toolbar);
 
-        ImageView appImage = findViewById(R.id.appImage);
-        appImage.setImageBitmap(image);
-
         toolbar.setNavigationOnClickListener(new View.OnClickListener(){
-
             @Override
             public void onClick(View v) {
 
@@ -48,7 +85,7 @@ public class DetailsActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                Snackbar.make(view, "Download", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
             }
         });
