@@ -8,7 +8,8 @@
     android:padding="5dp">
 
     <ImageView
-        android:id="@+id/image"
+        android:id="@+id/appImage"
+        android:transitionName="appImage"
         android:layout_width="100dp"
         android:layout_height="100dp" />
 

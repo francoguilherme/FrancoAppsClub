@@ -1,12 +1,12 @@
 package com.guilherme.appsclub;
 
+import android.app.Activity;
+import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
-import android.content.res.TypedArray;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -17,146 +17,36 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ImageView;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements TaskFragment.TaskCallbacks, NavigationView.OnNavigationItemSelectedListener {
+
+    private static final String TAG_TASK_FRAGMENT = "task_fragment";
+    private TaskFragment taskFragment;
 
     public GridView gridView;
     public GridViewAdapter gridViewAdapter;
+
     public ArrayList<AppItem> appItems = new ArrayList<>();
-    public ArrayList<String> imageURLs = new ArrayList<>();
-
-    public class DownloadApiDataTask extends AsyncTask<String, Void, String>{
-
-        StringBuilder apiData = new StringBuilder();
-        String line = "";
-
-        @Override
-        protected String doInBackground(String... urls) {
-
-            try {
-
-                URL url = new URL(urls[0]);
-
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-
-                InputStream inputStream = urlConnection.getInputStream();
-
-                BufferedReader streamReader = new BufferedReader(new InputStreamReader(inputStream));
-
-                while ((line = streamReader.readLine()) != null){
-
-                    apiData.append(line);
-                }
-
-                return apiData.toString();
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-            try {
-
-                JSONArray array = new JSONArray(result);
-
-                for (int i = 0; i < array.length(); i++){
-
-                    JSONObject jsonPart = array.getJSONObject(i);
-
-                    imageURLs.add(jsonPart.getString("imageURL"));
-
-                    appItems.add(new AppItem(null, // Null because we haven't downloaded the app image yet
-                            jsonPart.getString("name"),
-                            jsonPart.getString("company"),
-                            jsonPart.getString("description"),
-                            jsonPart.getString("score"),
-                            jsonPart.getString("countries")
-                    ));
-                }
-
-                addBitmapsToApps();
-
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public class DownloadImagesTask extends AsyncTask<String, Void, Bitmap>{
-
-        @Override
-        protected Bitmap doInBackground(String... urls) {
-
-            try {
-
-                URL url = new URL(urls[0]);
-
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-
-                urlConnection.connect();
-
-                InputStream inputStream = urlConnection.getInputStream();
-
-                Bitmap appBitmap = BitmapFactory.decodeStream(inputStream);
-
-                return appBitmap;
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return null;
-        }
-    }
-
-    public void addBitmapsToApps(){
-
-        Bitmap appImage;
-
-        for (int i = 0; i < appItems.size(); i++){
-
-            try{
-
-                appImage = new DownloadImagesTask().execute(imageURLs.get(i)).get();
-                appItems.get(i).setImage(appImage);
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        FragmentManager fragmentManager = getFragmentManager();
+        taskFragment = (TaskFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
+
+        // If the Fragment is non-null, then it is currently being retained across a configuration change.
+        if (taskFragment == null) {
+            System.out.println("criei fragmento");
+            taskFragment = new TaskFragment();
+            fragmentManager.beginTransaction().add(taskFragment, TAG_TASK_FRAGMENT).commit();
+        }
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -169,18 +59,10 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        DownloadApiDataTask downloadApiDataTask = new DownloadApiDataTask();
-
-        try {
-            downloadApiDataTask.execute("https://private-291f64-appsclub1.apiary-mock.com/apps").get();
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-
         gridView = findViewById(R.id.gridView);
+
+        this.appItems = taskFragment.appItems;
+
         gridViewAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, appItems);
         gridView.setAdapter(gridViewAdapter);
 
@@ -191,12 +73,27 @@ public class MainActivity extends AppCompatActivity
                 AppItem item = (AppItem) parent.getItemAtPosition(position);
 
                 Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-                intent.putExtra("title", item.getAppName());
+                intent.putExtra("appName", item.getAppName());
                 intent.putExtra("image", item.getImage());
 
-                startActivity(intent);
+                final ImageView appImage = view.findViewById(R.id.appImage);
+
+                ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, appImage, "appImage");
+
+                startActivity(intent, options.toBundle());
             }
         });
+    }
+
+    // Methods called by the TaskFragment
+    @Override
+    public void onPreExecute() {
+
+    }
+
+    @Override
+    public void onPostExecute() {
+
     }
 
     @Override
