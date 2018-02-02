@@ -2,6 +2,7 @@
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nested"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
@@ -11,7 +12,10 @@
     <GridLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="20dp"
+        android:layout_marginBottom="50dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp"
         android:columnCount="2"
         android:rowCount="3">
 
@@ -30,8 +34,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_column="1"
-            android:layout_row="0"
-            android:layout_gravity="center_horizontal|bottom" />
+            android:layout_gravity="center_horizontal|bottom"
+            android:layout_row="0" />
 
         <TextView
             android:id="@+id/companyView"
@@ -52,9 +56,10 @@
             android:layout_columnSpan="2"
             android:layout_columnWeight="2"
             android:layout_marginTop="30dp"
+            android:layout_marginBottom="50dp"
             android:layout_row="2"
             android:text="Description"
-            android:textSize="20sp" />
+            android:textSize="16sp" />
 
     </GridLayout>
 

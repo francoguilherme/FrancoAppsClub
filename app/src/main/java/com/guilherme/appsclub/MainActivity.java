@@ -162,6 +162,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onPostExecute() {
+
         createGridView();
     }
 
