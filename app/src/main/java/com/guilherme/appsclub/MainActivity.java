@@ -1,15 +1,22 @@
 package com.guilherme.appsclub;
 
+import android.app.Activity;
 import android.app.FragmentManager;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,35 +36,59 @@ public class MainActivity extends AppCompatActivity
 
     public ArrayList<AppItem> appItems = new ArrayList<>();
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    public String countryCode;
 
+    boolean isInternetOn(){
+        //Check if connected to internet, output accordingly
+        ConnectivityManager cm =
+                (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        return isConnected;
+    }
+
+    public void findCountryCode(){
+
+        // Finds the user's ISO country code
+        TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+        countryCode = telephonyManager.getNetworkCountryIso();
+
+        if (countryCode != null){
+            return; // If code was already found, move on
+        }
+
+        FindCountryTask findCountryTask = new FindCountryTask();
+        findCountryTask.execute("http://ip-api.com/json");
+        this.countryCode = findCountryTask.getCountryCode();
+    }
+
+    public void runDownloadTasks(){
+
+        findCountryCode();
+
+        // Handles the download tasks to avoid problems at configuration changes
         FragmentManager fragmentManager = getFragmentManager();
         TaskFragment taskFragment = (TaskFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
 
         // If the Fragment is non-null, then it is currently being retained across a configuration change.
         if (taskFragment == null) {
+
+            Bundle bundle = new Bundle();
+            bundle.putString("countryCode", countryCode);
+
             taskFragment = new TaskFragment();
+            taskFragment.setArguments(bundle);
             fragmentManager.beginTransaction().add(taskFragment, TAG_TASK_FRAGMENT).commit();
         }
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        appItems = taskFragment.appItems;
+    }
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+    public void createGridView(){
 
         gridView = findViewById(R.id.gridView);
-
-        this.appItems = taskFragment.appItems;
 
         gridViewAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, appItems);
         gridView.setAdapter(gridViewAdapter);
@@ -84,7 +115,46 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
-    // Methods called by the TaskFragment
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        if (isInternetOn()){
+
+            runDownloadTasks();
+
+        } else{
+
+            final Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
+                    "Sem conexão com a internet.",
+                    Snackbar.LENGTH_INDEFINITE);
+
+            snackbar.setAction("Tentar de novo", new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    MainActivity.this.recreate();
+                    createGridView();
+                }
+            }).show();
+        }
+
+        createGridView();
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+    }
+
     @Override
     public void onPreExecute() {
 
@@ -92,7 +162,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onPostExecute() {
-
+        createGridView();
     }
 
     @Override

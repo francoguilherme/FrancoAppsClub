@@ -9,9 +9,8 @@ public class AppItem {
     private String company;
     private String description;
     private String score;
-    private String countries;
 
-    public AppItem(Bitmap image, String appName, String company, String description, String score, String countries){
+    public AppItem(Bitmap image, String appName, String company, String description, String score){
 
         super();
         this.image = image;
@@ -19,7 +18,6 @@ public class AppItem {
         this.company = company;
         this.description = description;
         this.score = score;
-        this.countries = countries;
     }
 
     public Bitmap getImage() {
@@ -60,13 +58,5 @@ public class AppItem {
 
     public void setScore(String score) {
         this.score = score;
-    }
-
-    public String getCountries() {
-        return countries;
-    }
-
-    public void setCountries(String countries) {
-        this.countries = countries;
     }
 }
