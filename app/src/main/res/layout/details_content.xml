@@ -2,12 +2,11 @@
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/nested"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.guilherme.appsclub.DetailsActivity"
-    tools:showIn="@layout/activity_scrolling">
+    tools:showIn="@layout/details_layout">
 
     <GridLayout
         android:layout_width="match_parent"
@@ -55,8 +54,8 @@
             android:layout_column="0"
             android:layout_columnSpan="2"
             android:layout_columnWeight="2"
-            android:layout_marginTop="30dp"
             android:layout_marginBottom="50dp"
+            android:layout_marginTop="30dp"
             android:layout_row="2"
             android:text="Description"
             android:textSize="16sp" />
