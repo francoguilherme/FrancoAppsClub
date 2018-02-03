@@ -2,11 +2,15 @@ package com.guilherme.appsclub;
 
 import android.app.Activity;
 import android.app.FragmentManager;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProvider;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -26,6 +30,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements TaskFragment.TaskCallbacks, NavigationView.OnNavigationItemSelectedListener {
@@ -88,11 +93,11 @@ public class MainActivity extends AppCompatActivity
         appItems = taskFragment.appItems;
     }
 
-    public void createGridView(){
+    public void createGridView(ArrayList<AppItem> apps){
 
         gridView = findViewById(R.id.gridView);
 
-        gridViewAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, appItems);
+        gridViewAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, apps);
         gridView.setAdapter(gridViewAdapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -122,6 +127,15 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        MyViewModel model = ViewModelProviders.of(this).get(MyViewModel.class);
+        model.getApps().observe(this, new Observer<ArrayList<AppItem>>() {
+            @Override
+            public void onChanged(@Nullable ArrayList<AppItem> appItems) {
+
+                createGridView(appItems);
+            }
+        });
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -136,7 +150,7 @@ public class MainActivity extends AppCompatActivity
 
         if (isInternetOn()){
 
-            runDownloadTasks();
+            //runDownloadTasks();
 
         } else{
 
@@ -163,7 +177,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onPostExecute() {
 
-        createGridView();
+        //createGridView();
     }
 
     @Override
