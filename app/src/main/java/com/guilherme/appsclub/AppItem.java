@@ -32,16 +32,8 @@ public class AppItem {
         return appName;
     }
 
-    public void setAppName(String appName) {
-        this.appName = appName;
-    }
-
     public String getCompany() {
         return company;
-    }
-
-    public void setCompany(String company) {
-        this.company = company;
     }
 
     public String getDescription() {
@@ -54,9 +46,5 @@ public class AppItem {
 
     public String getScore() {
         return score;
-    }
-
-    public void setScore(String score) {
-        this.score = score;
     }
 }

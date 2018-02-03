@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,7 +64,13 @@ public class TaskFragment extends Fragment{
 
         try {
 
-            downloadApiDataTask.execute("https://private-291f64-appsclub1.apiary-mock.com/" + BuildConfig.FLAVOR).get();
+            StringBuilder url = new StringBuilder();
+            url.append("https://private-291f64-appsclub1.apiary-mock.com/")
+                    .append(countryCode)
+                    .append("/")
+                    .append( BuildConfig.FLAVOR);
+
+            downloadApiDataTask.execute(url.toString()).get();
 
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -135,11 +142,6 @@ public class TaskFragment extends Fragment{
                 for (int i = 0; i < array.length(); i++){
 
                     JSONObject jsonPart = array.getJSONObject(i);
-
-                    // If app is not available in the user's country, don't add it
-                    if (!jsonPart.getString("countries").contains(countryCode)){
-                        continue;
-                    }
 
                     imageURLs.add(jsonPart.getString("imageURL"));
 
