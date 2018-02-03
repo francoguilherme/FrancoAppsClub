@@ -1,9 +1,6 @@
 package com.guilherme.appsclub;
 
-import android.app.Activity;
-import android.app.FragmentManager;
 import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
@@ -14,14 +11,12 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,64 +28,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements TaskFragment.TaskCallbacks, NavigationView.OnNavigationItemSelectedListener {
-
-    private static final String TAG_TASK_FRAGMENT = "task_fragment";
+        implements NavigationView.OnNavigationItemSelectedListener {
 
     public GridView gridView;
     public GridViewAdapter gridViewAdapter;
 
-    public ArrayList<AppItem> appItems = new ArrayList<>();
-
-    public String countryCode;
-
     boolean isInternetOn(){
-        //Check if connected to internet, output accordingly
+        //Check if connected to internet
         ConnectivityManager cm =
                 (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null &&
+
+        return activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
-        return isConnected;
-    }
-
-    public void findCountryCode(){
-
-        // Finds the user's ISO country code
-        TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
-        countryCode = telephonyManager.getNetworkCountryIso();
-
-        if (countryCode != null){
-            return; // If code was already found, move on
-        }
-
-        FindCountryTask findCountryTask = new FindCountryTask();
-        findCountryTask.execute("http://ip-api.com/json");
-        this.countryCode = findCountryTask.getCountryCode();
-    }
-
-    public void runDownloadTasks(){
-
-        findCountryCode();
-
-        // Handles the download tasks to avoid problems at configuration changes
-
-        FragmentManager fragmentManager = getFragmentManager();
-        TaskFragment taskFragment = (TaskFragment) fragmentManager.findFragmentByTag(TAG_TASK_FRAGMENT);
-
-        // If the Fragment is non-null, then it is currently being retained across a configuration change.
-        if (taskFragment == null) {
-
-            Bundle bundle = new Bundle();
-            bundle.putString("countryCode", countryCode);
-
-            taskFragment = new TaskFragment();
-            taskFragment.setArguments(bundle);
-            fragmentManager.beginTransaction().add(taskFragment, TAG_TASK_FRAGMENT).commit();
-        }
-
-        appItems = taskFragment.appItems;
     }
 
     public void createGridView(ArrayList<AppItem> apps){
@@ -115,7 +66,8 @@ public class MainActivity extends AppCompatActivity
 
                 final ImageView appImage = view.findViewById(R.id.appImage);
 
-                ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, appImage, "appImage");
+                ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation
+                        (MainActivity.this, appImage, "appImage");
 
                 startActivity(intent, options.toBundle());
             }
@@ -128,31 +80,21 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         MyViewModel model = ViewModelProviders.of(this).get(MyViewModel.class);
-        model.getApps().observe(this, new Observer<ArrayList<AppItem>>() {
-            @Override
-            public void onChanged(@Nullable ArrayList<AppItem> appItems) {
 
-                createGridView(appItems);
-            }
-        });
+        TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+        model.setTelephonyManager(telephonyManager);
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        if (isInternetOn() && model.appItems.isEmpty()){
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
+            model.getApps().observe(this, new Observer<ArrayList<AppItem>>() {
+                @Override
+                public void onChanged(@Nullable ArrayList<AppItem> appItems) {
 
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
+                    createGridView(appItems);
+                }
+            });
 
-        if (isInternetOn()){
-
-            //runDownloadTasks();
-
-        } else{
+        } else if (model.appItems.isEmpty()){
 
             final Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
                     "Sem conexão com a internet.",
@@ -166,18 +108,25 @@ public class MainActivity extends AppCompatActivity
 
                 }
             }).show();
+
+        } else {
+
+            //  This is only called when there is a configuration change and the app
+            //  has already downloaded stuff, so it just needs to display it again
+            createGridView(model.appItems);
         }
-    }
 
-    @Override
-    public void onPreExecute() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-    }
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
 
-    @Override
-    public void onPostExecute() {
-
-        //createGridView();
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
     }
 
     @Override

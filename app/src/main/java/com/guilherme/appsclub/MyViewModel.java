@@ -6,7 +6,7 @@ import android.arch.lifecycle.ViewModel;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.Log;
+import android.telephony.TelephonyManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -22,13 +22,16 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
-public class MyViewModel extends ViewModel {
+class MyViewModel extends ViewModel {
 
-    public ArrayList<AppItem> appItems = new ArrayList<>();
-    public ArrayList<String> imageURLs = new ArrayList<>();
+    private String countryCode;
+    private TelephonyManager telephonyManager;
+
+    ArrayList<AppItem> appItems = new ArrayList<>();
+    private ArrayList<String> imageURLs = new ArrayList<>();
 
     private MutableLiveData<ArrayList<AppItem>> apps;
-    public LiveData<ArrayList<AppItem>> getApps(){
+    LiveData<ArrayList<AppItem>> getApps(){
 
         if (apps == null){
             apps = new MutableLiveData<>();
@@ -39,11 +42,13 @@ public class MyViewModel extends ViewModel {
 
     private void loadApps(){
 
+        findCountryCode();
+
         StringBuilder url = new StringBuilder();
         url.append("https://private-291f64-appsclub1.apiary-mock.com/")
-                .append("br")
+                .append(countryCode)
                 .append("/")
-                .append( BuildConfig.FLAVOR);
+                .append(BuildConfig.FLAVOR);
 
         new DownloadApiDataTask().execute(url.toString());
     }
@@ -148,7 +153,26 @@ public class MyViewModel extends ViewModel {
         }
     }
 
-    public void addBitmapsToApps(){
+    public void setTelephonyManager(TelephonyManager tm) {
+
+        telephonyManager = tm;
+    }
+
+    private void findCountryCode(){
+
+        // Finds the user's ISO country code
+        countryCode = telephonyManager.getNetworkCountryIso();
+
+        if (countryCode != null){
+            return; // If code was already found, move on
+        }
+
+        FindCountryTask findCountryTask = new FindCountryTask();
+        findCountryTask.execute("http://ip-api.com/json");
+        this.countryCode = findCountryTask.getCountryCode();
+    }
+
+    private void addBitmapsToApps(){
 
         Bitmap appImage;
 

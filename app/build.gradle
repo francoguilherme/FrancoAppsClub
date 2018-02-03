@@ -5,7 +5,7 @@ android {
     flavorDimensions "default"
     defaultConfig {
         applicationId "com.guilherme.appsclub"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
