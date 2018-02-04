@@ -4,6 +4,7 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
+import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -17,21 +18,30 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     public GridView gridView;
     public GridViewAdapter gridViewAdapter;
+
+    final String AVAILABLE_COUNTRIES = "br, us, uk";
+    String countryCode = "";
 
     boolean isInternetOn(){
         //Check if connected to internet
@@ -74,15 +84,61 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+    private void findCountryCode(){
+
+        // Finds the user's ISO country code
+        TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
+        countryCode = telephonyManager.getNetworkCountryIso();
+
+        if (!countryCode.isEmpty()){
+            return; // If code was already found, move on
+        }
+
+        // If not, find country code through the user's IP
+        FindCountryTask findCountryTask = new FindCountryTask();
+        try {
+            countryCode = findCountryTask.execute("http://ip-api.com/json").get();
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        MyViewModel model = ViewModelProviders.of(this).get(MyViewModel.class);
+        final ProgressBar progressBar = findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.VISIBLE);
 
-        TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
-        model.setTelephonyManager(telephonyManager);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        findCountryCode();
+
+        if (!AVAILABLE_COUNTRIES.contains(countryCode)){
+
+            final Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
+                    "Não há aplicativos disponíveis para seu país",
+                    Snackbar.LENGTH_INDEFINITE);
+            snackbar.show();
+            return;
+        }
+
+        final MyViewModel model = ViewModelProviders.of(this).get(MyViewModel.class);
+        model.setCountryCode(countryCode);
 
         if (isInternetOn() && model.appItems.isEmpty()){
 
@@ -90,7 +146,14 @@ public class MainActivity extends AppCompatActivity
                 @Override
                 public void onChanged(@Nullable ArrayList<AppItem> appItems) {
 
+                    progressBar.setVisibility(View.GONE);
+
                     createGridView(appItems);
+
+                    for (int i = 0; i < model.imageURLs.size(); i++){
+
+                        Picasso.with(getApplicationContext()).load(model.imageURLs.get(i)).into((ImageView) gridView.getChildAt(i).getTag(1));
+                    }
                 }
             });
 
@@ -115,18 +178,6 @@ public class MainActivity extends AppCompatActivity
             //  has already downloaded stuff, so it just needs to display it again
             createGridView(model.appItems);
         }
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
     }
 
     @Override

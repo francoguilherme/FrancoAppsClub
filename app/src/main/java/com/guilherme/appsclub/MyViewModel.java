@@ -6,7 +6,8 @@ import android.arch.lifecycle.ViewModel;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.telephony.TelephonyManager;
+
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,13 +25,12 @@ import java.util.concurrent.ExecutionException;
 
 class MyViewModel extends ViewModel {
 
-    private String countryCode;
-    private TelephonyManager telephonyManager;
+    private String countryCode = "";
 
     ArrayList<AppItem> appItems = new ArrayList<>();
-    private ArrayList<String> imageURLs = new ArrayList<>();
-
+    public ArrayList<String> imageURLs = new ArrayList<>();
     private MutableLiveData<ArrayList<AppItem>> apps;
+
     LiveData<ArrayList<AppItem>> getApps(){
 
         if (apps == null){
@@ -40,9 +40,12 @@ class MyViewModel extends ViewModel {
         return apps;
     }
 
-    private void loadApps(){
+    public void setCountryCode(String s) {
 
-        findCountryCode();
+        countryCode = s;
+    }
+
+    private void loadApps(){
 
         StringBuilder url = new StringBuilder();
         url.append("https://private-291f64-appsclub1.apiary-mock.com/")
@@ -109,9 +112,28 @@ class MyViewModel extends ViewModel {
                     ));
                 }
 
-                addBitmapsToApps();
+                apps.postValue(appItems);
+                //addBitmapsToApps();
 
             } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void addBitmapsToApps(){
+
+        Bitmap appImage;
+
+        for (int i = 0; i < appItems.size(); i++){
+
+            try{
+                appImage = new DownloadImagesTask().execute(imageURLs.get(i)).get();
+                appItems.get(i).setImage(appImage);
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
                 e.printStackTrace();
             }
         }
@@ -150,44 +172,6 @@ class MyViewModel extends ViewModel {
             super.onPostExecute(bitmap);
 
             apps.postValue(appItems);
-        }
-    }
-
-    public void setTelephonyManager(TelephonyManager tm) {
-
-        telephonyManager = tm;
-    }
-
-    private void findCountryCode(){
-
-        // Finds the user's ISO country code
-        countryCode = telephonyManager.getNetworkCountryIso();
-
-        if (countryCode != null){
-            return; // If code was already found, move on
-        }
-
-        FindCountryTask findCountryTask = new FindCountryTask();
-        findCountryTask.execute("http://ip-api.com/json");
-        this.countryCode = findCountryTask.getCountryCode();
-    }
-
-    private void addBitmapsToApps(){
-
-        Bitmap appImage;
-
-        for (int i = 0; i < appItems.size(); i++){
-
-            try{
-
-                appImage = new DownloadImagesTask().execute(imageURLs.get(i)).get();
-                appItems.get(i).setImage(appImage);
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
         }
     }
 }

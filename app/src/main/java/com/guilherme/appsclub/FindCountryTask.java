@@ -1,7 +1,6 @@
 package com.guilherme.appsclub;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,10 +18,6 @@ public class FindCountryTask extends AsyncTask<String, Void, String> {
     private StringBuilder apiData = new StringBuilder();
     private String line = "";
     private String countryCode;
-
-    public String getCountryCode() {
-        return countryCode;
-    }
 
     @Override
     protected String doInBackground(String... urls) {
@@ -42,30 +37,20 @@ public class FindCountryTask extends AsyncTask<String, Void, String> {
                 apiData.append(line);
             }
 
-            return apiData.toString();
+            JSONObject jsonObject = new JSONObject(apiData.toString());
+            countryCode = jsonObject.getString("countryCode");
+            countryCode = countryCode.toLowerCase();
+
+            return countryCode;
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(String result) {
-        super.onPostExecute(result);
-
-        try {
-
-            JSONObject jsonObject = new JSONObject(result);
-            countryCode = jsonObject.getString("countryCode");
-            countryCode = countryCode.toLowerCase();
-            Log.i("Country from api", countryCode);
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        return null;
     }
 }
