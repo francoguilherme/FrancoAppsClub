@@ -1,7 +1,6 @@
 package com.guilherme.appsclub;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -13,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 public class DetailsActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
@@ -22,7 +23,7 @@ public class DetailsActivity extends AppCompatActivity {
     private RatingBar scoreBar;
 
     private String appName;
-    private Bitmap image;
+    private String imageURL;
     private String description;
     private String company;
     private String score;
@@ -46,7 +47,7 @@ public class DetailsActivity extends AppCompatActivity {
         Intent parentIntent = getIntent();
 
         appName = parentIntent.getStringExtra("appName");
-        image = parentIntent.getParcelableExtra("image");
+        imageURL = parentIntent.getStringExtra("imageURL");
         description = parentIntent.getStringExtra("description");
         company = parentIntent.getStringExtra("company");
         score = parentIntent.getStringExtra("score");
@@ -54,8 +55,8 @@ public class DetailsActivity extends AppCompatActivity {
 
     public void updateDetails(){
 
+        Picasso.with(getApplicationContext()).load(imageURL).fit().into(appImageView);
         toolbar.setTitle(appName);
-        appImageView.setImageBitmap(image);
         descriptionView.setText(description);
         companyView.setText(company);
         scoreBar.setRating(Float.valueOf(score));

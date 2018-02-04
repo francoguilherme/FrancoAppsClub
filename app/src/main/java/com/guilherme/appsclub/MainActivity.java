@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity
 
                 Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
                 intent.putExtra("appName", item.getAppName());
-                intent.putExtra("image", item.getImage());
+                intent.putExtra("imageURL", item.getImageURL());
                 intent.putExtra("description", item.getDescription());
                 intent.putExtra("company", item.getCompany());
                 intent.putExtra("score", item.getScore());
@@ -111,21 +111,6 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        final ProgressBar progressBar = findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
         findCountryCode();
 
         if (!AVAILABLE_COUNTRIES.contains(countryCode)){
@@ -142,18 +127,15 @@ public class MainActivity extends AppCompatActivity
 
         if (isInternetOn() && model.appItems.isEmpty()){
 
+            final ProgressBar progressBar = findViewById(R.id.progressBar);
+            progressBar.setVisibility(View.VISIBLE);
+
             model.getApps().observe(this, new Observer<ArrayList<AppItem>>() {
                 @Override
                 public void onChanged(@Nullable ArrayList<AppItem> appItems) {
 
                     progressBar.setVisibility(View.GONE);
-
                     createGridView(appItems);
-
-                    for (int i = 0; i < model.imageURLs.size(); i++){
-
-                        Picasso.with(getApplicationContext()).load(model.imageURLs.get(i)).into((ImageView) gridView.getChildAt(i).getTag(1));
-                    }
                 }
             });
 
@@ -178,6 +160,18 @@ public class MainActivity extends AppCompatActivity
             //  has already downloaded stuff, so it just needs to display it again
             createGridView(model.appItems);
         }
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
     }
 
     @Override

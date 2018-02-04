@@ -3,11 +3,7 @@ package com.guilherme.appsclub;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-
-import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,7 +17,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 class MyViewModel extends ViewModel {
 
@@ -104,7 +99,8 @@ class MyViewModel extends ViewModel {
 
                     imageURLs.add(jsonPart.getString("imageURL"));
 
-                    appItems.add(new AppItem(null, // Null because we haven't downloaded the app image yet
+                    appItems.add(new AppItem(
+                            jsonPart.getString("imageURL"),
                             jsonPart.getString("name"),
                             jsonPart.getString("company"),
                             jsonPart.getString("description"),
@@ -113,65 +109,10 @@ class MyViewModel extends ViewModel {
                 }
 
                 apps.postValue(appItems);
-                //addBitmapsToApps();
 
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    private void addBitmapsToApps(){
-
-        Bitmap appImage;
-
-        for (int i = 0; i < appItems.size(); i++){
-
-            try{
-                appImage = new DownloadImagesTask().execute(imageURLs.get(i)).get();
-                appItems.get(i).setImage(appImage);
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public class DownloadImagesTask extends AsyncTask<String, Void, Bitmap>{
-
-        @Override
-        protected Bitmap doInBackground(String... urls) {
-
-            try {
-
-                URL url = new URL(urls[0]);
-
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-
-                urlConnection.connect();
-
-                InputStream inputStream = urlConnection.getInputStream();
-
-                Bitmap appBitmap = BitmapFactory.decodeStream(inputStream);
-
-                return appBitmap;
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            super.onPostExecute(bitmap);
-
-            apps.postValue(appItems);
         }
     }
 }

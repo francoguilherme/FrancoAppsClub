@@ -1,31 +1,25 @@
 package com.guilherme.appsclub;
 
-import android.graphics.Bitmap;
-
 public class AppItem {
 
-    private Bitmap image;
+    private String imageURL;
     private String appName;
     private String company;
     private String description;
     private String score;
 
-    public AppItem(Bitmap image, String appName, String company, String description, String score){
+    public AppItem(String imageURL, String appName, String company, String description, String score){
 
         super();
-        this.image = image;
+        this.imageURL = imageURL;
         this.appName = appName;
         this.company = company;
         this.description = description;
         this.score = score;
     }
 
-    public Bitmap getImage() {
-        return image;
-    }
-
-    public void setImage(Bitmap image) {
-        this.image = image;
+    public String getImageURL() {
+        return imageURL;
     }
 
     public String getAppName() {
@@ -38,10 +32,6 @@ public class AppItem {
 
     public String getDescription() {
         return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getScore() {
