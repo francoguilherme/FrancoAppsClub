@@ -18,16 +18,11 @@ import com.squareup.picasso.Picasso;
 public class DetailsActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
+    private CollapsingToolbarLayout toolbarLayout;
     private ImageView appImageView;
     private TextView descriptionView;
     private TextView companyView;
     private RatingBar scoreBar;
-
-    private String appName;
-    private String imageURL;
-    private String description;
-    private String company;
-    private String score;
 
     @Override
     public void onBackPressed() {
@@ -37,11 +32,18 @@ public class DetailsActivity extends AppCompatActivity {
     public void findViews(){
 
         toolbar = findViewById(R.id.toolbar);
+        toolbarLayout = findViewById(R.id.toolbar_layout);
         appImageView = findViewById(R.id.appImage);
         descriptionView = findViewById(R.id.descriptionView);
         companyView = findViewById(R.id.companyView);
         scoreBar = findViewById(R.id.scoreBar);
     }
+
+    private String appName;
+    private String imageURL;
+    private String description;
+    private String company;
+    private String score;
 
     public void getExtras(){
 
@@ -56,9 +58,10 @@ public class DetailsActivity extends AppCompatActivity {
 
     public void updateDetails(){
 
-        Picasso.with(getApplicationContext()).load(imageURL).fit().into(appImageView);
-
-
+        Picasso.with(getApplicationContext())
+                .load(imageURL)
+                .fit()
+                .into(appImageView);
 
         toolbar.setTitle(appName);
         descriptionView.setText(description);
@@ -77,21 +80,18 @@ public class DetailsActivity extends AppCompatActivity {
 
         toolbar.setNavigationIcon(ContextCompat.getDrawable(getApplicationContext(), R.drawable.ic_arrow_back));
         setSupportActionBar(toolbar);
-
         toolbar.setNavigationOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
-
                 onBackPressed();
             }
         });
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton downloadAppFab = findViewById(R.id.fab);
+        downloadAppFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Download", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Snackbar.make(view, "Download", Snackbar.LENGTH_LONG).show();
             }
         });
     }

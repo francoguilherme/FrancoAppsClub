@@ -9,7 +9,7 @@
         android:allowBackup="true"
         android:icon="${flavorIcon}"
         android:label="${flavorName}"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="${flavorRoundIcon}"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 

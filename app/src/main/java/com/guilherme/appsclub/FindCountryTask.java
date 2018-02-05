@@ -25,11 +25,8 @@ public class FindCountryTask extends AsyncTask<String, Void, String> {
         try {
 
             URL url = new URL(urls[0]);
-
             HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-
             InputStream inputStream = urlConnection.getInputStream();
-
             BufferedReader streamReader = new BufferedReader(new InputStreamReader(inputStream));
 
             while ((line = streamReader.readLine()) != null){
@@ -37,8 +34,8 @@ public class FindCountryTask extends AsyncTask<String, Void, String> {
                 apiData.append(line);
             }
 
-            JSONObject jsonObject = new JSONObject(apiData.toString());
-            countryCode = jsonObject.getString("countryCode");
+            JSONObject infoFromIP = new JSONObject(apiData.toString());
+            countryCode = infoFromIP.getString("countryCode");
             countryCode = countryCode.toLowerCase();
 
             return countryCode;

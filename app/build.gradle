@@ -23,7 +23,8 @@ android {
             versionNameSuffix "-apps"
             manifestPlaceholders = [
                     flavorName: "Apps Club - Apps",
-                    flavorIcon: "@mipmap/ic_launcher_apps"
+                    flavorIcon: "@mipmap/ic_launcher_apps",
+                    flavorRoundIcon: "@mipmap/ic_launcher_apps_round"
             ]
         }
         games {
@@ -31,7 +32,8 @@ android {
             versionNameSuffix "-games"
             manifestPlaceholders = [
                     flavorName: "Apps Club - Games",
-                    flavorIcon: "@mipmap/ic_launcher_games"
+                    flavorIcon: "@mipmap/ic_launcher_games",
+                    flavorRoundIcon: "@mipmap/ic_launcher_games_round"
             ]
         }
         kids {
@@ -39,7 +41,8 @@ android {
             versionNameSuffix "-kids"
             manifestPlaceholders = [
                     flavorName: "Apps Club - Kids",
-                    flavorIcon: "@mipmap/ic_launcher_kids"
+                    flavorIcon: "@mipmap/ic_launcher_kids",
+                    flavorRoundIcon: "@mipmap/ic_launcher_kids_round"
             ]
         }
     }

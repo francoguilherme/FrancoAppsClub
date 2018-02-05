@@ -8,7 +8,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.GravityCompat;
@@ -17,7 +16,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.TelephonyManager;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -27,17 +25,10 @@ import android.widget.ProgressBar;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
-
-    public GridView gridView;
-    public GridViewAdapter gridViewAdapter;
-
-    final String AVAILABLE_COUNTRIES = "br, us, uk";
-    String countryCode = "";
+public class MainActivity extends AppCompatActivity {
 
     boolean isInternetOn(){
-        //Check if connected to internet
+
         ConnectivityManager cm =
                 (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
 
@@ -47,39 +38,47 @@ public class MainActivity extends AppCompatActivity
                 activeNetwork.isConnectedOrConnecting();
     }
 
-    public void createGridView(ArrayList<AppItem> apps){
+    private GridView gridView;
+    private GridViewAdapter gridViewAdapter;
+
+    public void createGridView(ArrayList<AppItem> appsList){
+        // Creates the grid used to display the apps
 
         gridView = findViewById(R.id.gridView);
 
-        gridViewAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, apps);
+        gridViewAdapter = new GridViewAdapter(this, R.layout.grid_item_layout, appsList);
         gridView.setAdapter(gridViewAdapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                AppItem item = (AppItem) parent.getItemAtPosition(position);
+                AppItem appItem = (AppItem) parent.getItemAtPosition(position);
 
-                Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
-                intent.putExtra("appName", item.getAppName());
-                intent.putExtra("imageURL", item.getImageURL());
-                intent.putExtra("description", item.getDescription());
-                intent.putExtra("company", item.getCompany());
-                intent.putExtra("score", item.getScore());
+                // Creates an intent to change from the list of apps to the details of an app
+                Intent detailsIntent = new Intent(MainActivity.this, DetailsActivity.class);
+                detailsIntent.putExtra("appName", appItem.getAppName());
+                detailsIntent.putExtra("imageURL", appItem.getImageURL());
+                detailsIntent.putExtra("description", appItem.getDescription());
+                detailsIntent.putExtra("company", appItem.getCompany());
+                detailsIntent.putExtra("score", appItem.getScore());
 
                 final ImageView appImage = view.findViewById(R.id.appImage);
 
                 ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation
                         (MainActivity.this, appImage, "appImage");
 
-                startActivity(intent, options.toBundle());
+                // Changes to the DetailsActivity animating the app icon across screens
+                startActivity(detailsIntent, options.toBundle());
             }
         });
     }
 
-    private void findCountryCode(){
+    String countryCode = "";
 
-        // Finds the user's ISO country code
+    private void findCountryCode(){
+        // Country code in ISO standards
+
         TelephonyManager telephonyManager = (TelephonyManager) this.getSystemService(Context.TELEPHONY_SERVICE);
         countryCode = telephonyManager.getNetworkCountryIso();
 
@@ -104,9 +103,12 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // This is done early so we don't download anything that won't be shown to the user
         findCountryCode();
 
-        if (!AVAILABLE_COUNTRIES.contains(countryCode)){
+        final String availableCountries = "br, us, uk";
+
+        if (!availableCountries.contains(countryCode)){
 
             final Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
                     "Não há aplicativos disponíveis para seu país",
@@ -115,24 +117,29 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        final MyViewModel model = ViewModelProviders.of(this).get(MyViewModel.class);
-        model.setCountryCode(countryCode);
+        // This view model will hold every app information we need to download
+        final AppsInfoViewModel appsInfoModel = ViewModelProviders.of(this).get(AppsInfoViewModel.class);
 
-        if (isInternetOn() && model.appItems.isEmpty()){
+        // Sets the country code so the ViewModel knows from which country to download
+        appsInfoModel.setCountryCode(countryCode);
+
+        if (isInternetOn() && appsInfoModel.appItems.isEmpty()){
+            // Nothing has been downloaded yet
 
             final ProgressBar progressBar = findViewById(R.id.progressBar);
             progressBar.setVisibility(View.VISIBLE);
 
-            model.getApps().observe(this, new Observer<ArrayList<AppItem>>() {
+            appsInfoModel.getAppsData().observe(this, new Observer<ArrayList<AppItem>>() {
                 @Override
                 public void onChanged(@Nullable ArrayList<AppItem> appItems) {
+                    // Ran when it finishes downloading
 
                     progressBar.setVisibility(View.GONE);
                     createGridView(appItems);
                 }
             });
 
-        } else if (model.appItems.isEmpty()){
+        } else if (appsInfoModel.appItems.isEmpty()){
 
             final Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
                     "Sem conexão com a internet.",
@@ -151,7 +158,7 @@ public class MainActivity extends AppCompatActivity
 
             //  This is only called when there is a configuration change and the app
             //  has already downloaded stuff, so it just needs to display it again
-            createGridView(model.appItems);
+            createGridView(appsInfoModel.appItems);
         }
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -162,9 +169,6 @@ public class MainActivity extends AppCompatActivity
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
     }
 
     @Override
@@ -175,14 +179,5 @@ public class MainActivity extends AppCompatActivity
         } else {
             super.onBackPressed();
         }
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
     }
 }

@@ -9,21 +9,21 @@
         android:checkableBehavior="single">
         <item
             android:icon="@drawable/ic_home_black_24dp"
-            android:title="Início" />
+            android:title="@string/inicio" />
         <item
             android:icon="@drawable/ic_file_download_black_24dp"
-            android:title="Instalados" />
+            android:title="@string/instalados" />
         <item
             android:icon="@drawable/ic_favorite_black_24dp"
-            android:title="Favoritos" />
+            android:title="@string/favoritos" />
     </group>
     <group android:id="@+id/group2" >
         <item
             android:icon="@drawable/ic_account_box_black_24dp"
-            android:title="Conta" />
+            android:title="@string/conta" />
         <item
             android:icon="@drawable/ic_settings_black_24dp"
-            android:title="Configurações" />
+            android:title="@string/configuracoes" />
     </group>
 
 </menu>

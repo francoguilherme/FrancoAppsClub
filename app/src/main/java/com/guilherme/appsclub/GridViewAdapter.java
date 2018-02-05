@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class GridViewAdapter extends ArrayAdapter{
 
     private Context context;
-    private int layoutResourceID;
+    private int gridLayoutResourceID;
     private ArrayList appsList = new ArrayList();
 
     public GridViewAdapter(Context context, int layoutResourceID, ArrayList appsList) {
@@ -24,8 +24,14 @@ public class GridViewAdapter extends ArrayAdapter{
         super(context, layoutResourceID, appsList);
 
         this.context = context;
-        this.layoutResourceID = layoutResourceID;
+        this.gridLayoutResourceID = layoutResourceID;
         this.appsList = appsList;
+    }
+
+    static class ViewHolder{
+
+        TextView appName;
+        ImageView image;
     }
 
     // Creates a new view for each app in the grid
@@ -38,9 +44,9 @@ public class GridViewAdapter extends ArrayAdapter{
         if (row == null){
 
             LayoutInflater inflater = ((Activity) context).getLayoutInflater();
-            row = inflater.inflate(layoutResourceID, parent, false);
+            row = inflater.inflate(gridLayoutResourceID, parent, false);
             holder = new ViewHolder();
-            holder.appName = row.findViewById(R.id.text);
+            holder.appName = row.findViewById(R.id.appName);
             holder.image = row.findViewById(R.id.appImage);
             row.setTag(holder);
 
@@ -49,15 +55,14 @@ public class GridViewAdapter extends ArrayAdapter{
             holder = (ViewHolder) row.getTag();
         }
 
-        AppItem item = (AppItem) appsList.get(position);
-        Picasso.with(getContext()).load(item.getImageURL()).fit().into(holder.image);
-        holder.appName.setText(item.getAppName());
+        AppItem appItem = (AppItem) appsList.get(position);
+        // Gets the image URL from the list of apps and downloads it
+        Picasso.with(getContext())
+                .load(appItem.getImageURL())
+                .fit()
+                .into(holder.image);
+
+        holder.appName.setText(appItem.getAppName());
         return row;
-    }
-
-    static class ViewHolder{
-
-        TextView appName;
-        ImageView image;
     }
 }

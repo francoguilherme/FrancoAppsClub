@@ -3,8 +3,12 @@
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-
-    <string name="action_settings">Settings</string>
     <string name="title_activity_scrolling">DetailsActivity</string>
+
+    <string name="inicio">Início</string>
+    <string name="instalados">Instalados</string>
+    <string name="favoritos">Favoritos</string>
+    <string name="conta">Conta</string>
+    <string name="configuracoes">Configurações</string>
 
 </resources>

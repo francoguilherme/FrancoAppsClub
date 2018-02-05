@@ -18,22 +18,23 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-class MyViewModel extends ViewModel {
+class AppsInfoViewModel extends ViewModel {
 
-    private String countryCode = "";
-
-    ArrayList<AppItem> appItems = new ArrayList<>();
+    public ArrayList<AppItem> appItems = new ArrayList<>();
     public ArrayList<String> imageURLs = new ArrayList<>();
-    private MutableLiveData<ArrayList<AppItem>> apps;
 
-    LiveData<ArrayList<AppItem>> getApps(){
+    private MutableLiveData<ArrayList<AppItem>> appsData;
 
-        if (apps == null){
-            apps = new MutableLiveData<>();
+    LiveData<ArrayList<AppItem>> getAppsData(){
+
+        if (appsData == null){
+            appsData = new MutableLiveData<>();
             loadApps();
         }
-        return apps;
+        return appsData;
     }
+
+    private String countryCode = "";
 
     public void setCountryCode(String s) {
 
@@ -43,6 +44,7 @@ class MyViewModel extends ViewModel {
     private void loadApps(){
 
         StringBuilder url = new StringBuilder();
+        // Used to specify the user's country and the app flavor (Apps, Kids or Games)
         url.append("https://private-291f64-appsclub1.apiary-mock.com/")
                 .append(countryCode)
                 .append("/")
@@ -62,11 +64,8 @@ class MyViewModel extends ViewModel {
             try {
 
                 URL url = new URL(urls[0]);
-
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-
                 InputStream inputStream = urlConnection.getInputStream();
-
                 BufferedReader streamReader = new BufferedReader(new InputStreamReader(inputStream));
 
                 while ((line = streamReader.readLine()) != null){
@@ -86,29 +85,29 @@ class MyViewModel extends ViewModel {
         }
 
         @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
+        protected void onPostExecute(String downloadedApiData) {
+            super.onPostExecute(downloadedApiData);
 
             try {
 
-                JSONArray array = new JSONArray(result);
+                JSONArray appsArray = new JSONArray(downloadedApiData);
 
-                for (int i = 0; i < array.length(); i++){
+                for (int i = 0; i < appsArray.length(); i++){
 
-                    JSONObject jsonPart = array.getJSONObject(i);
+                    JSONObject appInfo = appsArray.getJSONObject(i);
 
-                    imageURLs.add(jsonPart.getString("imageURL"));
+                    imageURLs.add(appInfo.getString("imageURL"));
 
                     appItems.add(new AppItem(
-                            jsonPart.getString("imageURL"),
-                            jsonPart.getString("name"),
-                            jsonPart.getString("company"),
-                            jsonPart.getString("description"),
-                            jsonPart.getString("score")
+                            appInfo.getString("imageURL"),
+                            appInfo.getString("name"),
+                            appInfo.getString("company"),
+                            appInfo.getString("description"),
+                            appInfo.getString("score")
                     ));
                 }
 
-                apps.postValue(appItems);
+                appsData.postValue(appItems);
 
             } catch (JSONException e) {
                 e.printStackTrace();
