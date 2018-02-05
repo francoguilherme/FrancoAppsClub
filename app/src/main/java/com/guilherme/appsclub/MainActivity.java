@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         // This is done early so we don't download anything that won't be shown to the user
         findCountryCode();
 
-        final String availableCountries = "br, us, uk";
+        final String availableCountries = "br, us, gb";
 
         if (!availableCountries.contains(countryCode)){
 
