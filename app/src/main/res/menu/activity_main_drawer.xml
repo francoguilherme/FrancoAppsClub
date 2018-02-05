@@ -4,32 +4,26 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <group android:checkableBehavior="single">
+    <group
+        android:id="@+id/group1"
+        android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_br"
-            android:icon="@drawable/ic_flag"
-            android:title="Brasil" />
+            android:icon="@drawable/ic_home_black_24dp"
+            android:title="Início" />
         <item
-            android:id="@+id/nav_us"
-            android:icon="@drawable/ic_flag"
-            android:title="United States" />
+            android:icon="@drawable/ic_file_download_black_24dp"
+            android:title="Instalados" />
         <item
-            android:id="@+id/nav_uk"
-            android:icon="@drawable/ic_flag"
-            android:title="United Kingdom" />
+            android:icon="@drawable/ic_favorite_black_24dp"
+            android:title="Favoritos" />
     </group>
-
-    <item android:title="Communicate">
-        <menu>
-            <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
-            <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
-        </menu>
-    </item>
+    <group android:id="@+id/group2" >
+        <item
+            android:icon="@drawable/ic_account_box_black_24dp"
+            android:title="Conta" />
+        <item
+            android:icon="@drawable/ic_settings_black_24dp"
+            android:title="Configurações" />
+    </group>
 
 </menu>
