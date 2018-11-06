@@ -18,7 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-class AppsInfoViewModel extends ViewModel {
+public class AppsInfoViewModel extends ViewModel {
 
     public ArrayList<AppItem> appItems = new ArrayList<>();
     public ArrayList<String> imageURLs = new ArrayList<>();
